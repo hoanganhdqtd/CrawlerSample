@@ -1,0 +1,11 @@
+c:\users\anh phan\documents\visual studio 2015\Projects\Crawler\Crawler\bin\Debug\Crawler.exe.config
+C:\Users\Anh Phan\Documents\Visual Studio 2015\Projects\Crawler\Crawler\bin\Debug\Crawler.exe
+C:\Users\Anh Phan\Documents\Visual Studio 2015\Projects\Crawler\Crawler\bin\Debug\Crawler.pdb
+C:\Users\Anh Phan\Documents\Visual Studio 2015\Projects\Crawler\Crawler\obj\Debug\Crawler.csprojResolveAssemblyReference.cache
+C:\Users\Anh Phan\Documents\Visual Studio 2015\Projects\Crawler\Crawler\obj\Debug\Crawler.exe
+C:\Users\Anh Phan\Documents\Visual Studio 2015\Projects\Crawler\Crawler\obj\Debug\Crawler.pdb
+C:\Users\Anh Phan\documents\visual studio 2015\Projects\Crawler\Crawler\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Anh Phan\documents\visual studio 2015\Projects\Crawler\Crawler\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Anh Phan\Downloads\Documents\CS487-488\Sample codes\Crawler\Crawler\bin\Debug\Crawler.exe.config
+C:\Users\Anh Phan\Downloads\Documents\CS487-488\Sample codes\Crawler\Crawler\obj\Debug\Crawler.exe
+C:\Users\Anh Phan\Downloads\Documents\CS487-488\Sample codes\Crawler\Crawler\obj\Debug\Crawler.pdb
