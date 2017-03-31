@@ -43,6 +43,7 @@ namespace ConsoleApplication1
         public decimal HighPrice { get; set; }
         public decimal LowPrice { get; set; }
         public decimal AvgPrice { get; set; }
+        //public decimal OpenPrice { get; set; }
         public Int64 TotalQtty { get; set; }
         public Int64 FBuyQtty { get; set; }
         public Int64 FCurrentRoom { get; set; }
@@ -151,10 +152,10 @@ namespace ConsoleApplication1
 
         public static void CrawlData()
         {
-            //Thread t = new Thread(new ParameterizedThreadStart(ThreadLoop));
+            Thread t = new Thread(new ParameterizedThreadStart(ThreadLoop));
 
-            //t.Start((Action)GetData);
-            GetData();
+            t.Start((Action)GetData);
+            GetDataFromFpts();
         }
 
         public static void ThreadLoop(object callback)
@@ -166,7 +167,7 @@ namespace ConsoleApplication1
             }
         }
 
-        public static void GetData()
+        public static void GetDataFromFpts()
         {
             //getdata();
 
@@ -253,13 +254,19 @@ namespace ConsoleApplication1
             persist security info=False;
             initial catalog=StockTrainer";
 
+            var EquityNameDict = GetName();
+            //Console.WriteLine(EquityNameDict["AAA"]);
+            Console.ReadLine();
+
             foreach (var linetok in linetokens)
             {
                 JObject linejson = JObject.Parse(linetok);
                 //Console.WriteLine(linejson);
                 //Console.ReadLine();
 
+                //var Ticker = linejson["Info"][0][1].ToObject<string>();
                 var StockName = linejson["Info"][0][1].ToObject<string>();
+                //var StockName = stockNameDict[Ticker];
                 var PrevClosePrice = linejson["Info"][1][1].ToObject<decimal>();
                 var Ceiling = linejson["Info"][2][1].ToObject<decimal>();
                 var Floor = linejson["Info"][3][1].ToObject<decimal>();
@@ -304,8 +311,8 @@ namespace ConsoleApplication1
                 Console.WriteLine(stockdetailpair.Value.ToString());
                 Console.WriteLine();
             }
-
-            
+            Console.ReadLine();
+                      
 
             try
             {
@@ -320,10 +327,12 @@ namespace ConsoleApplication1
                     //cmd.CommandText = String.Format(@"INSERT INTO dbo.History (Ticker, Time, HistoryPrice)
                     //                VALUES ('{0}', {1}, {2})", stock.Value.StockSymbol, DateTime.Now, stock.Value.MatchPrice);
 
-                    //SqlCommand cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
+
+                    //cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
                     //cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
                     //cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
                     //cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
+
 
                     //cmd.CommandText = String.Format(@"
                     //    INSERT INTO dbo.Stock
@@ -345,8 +354,8 @@ namespace ConsoleApplication1
                     //     BidSize                         
                     //    )
                     //    VALUES ('{0}', '{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15})",
-                    //    stock.Value.StockSymbol, stock.Value.StockSymbol, stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice, 
-                    //    stock.Value.LowPrice, 0, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1, 
+                    //    stock.Value.StockSymbol, stock.Value.StockSymbol, stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
+                    //    stock.Value.LowPrice, 0, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1,
                     //    stock.Value.OfferV1, stock.Value.BidV1);
 
 
@@ -405,43 +414,47 @@ namespace ConsoleApplication1
                     //da.UpdateCommand.Parameters.Add("@BidSize", SqlDbType.BigInt);
                     //da.UpdateCommand.Parameters["@BidSize"].Value = stock.Value.BidV1;
 
-                    cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET Price = {0},
-                                                                           PrevClosePrice = {1},
-                                                                           HighPrice = {2},
-                                                                           LowPrice = {3},
-                                                                           OpenPrice = {4},
-                                                                           Volume = {5},
-                                                                           Change = {6},
-                                                                           MarketCap = {7},
-                                                                           [52-week_High] = {8},
-                                                                           [52-week_Low] = {9},
-                                                                           AskPrice = {10},
-                                                                           BidPrice = {11},
-                                                                           AskSize = {12},
-                                                                           BidSize = {13},                                                                           
-                                                        WHERE Ticker = '{14}'", stock.Value.MatchPrice,
-                                                                           stock.Value.PriorPrice,
-                                                                           stock.Value.HighPrice,
-                                                                           stock.Value.LowPrice,
-                                                                           0,
-                                                                           0,
-                                                                           stock.Value.MatchPrice - stock.Value.PriorPrice,
-                                                                           0,
-                                                                           0,
-                                                                           0,
-                                                                           stock.Value.OfferP1,
-                                                                           stock.Value.BidP1,
-                                                                           stock.Value.OfferV1,
-                                                                           stock.Value.BidV1,                                                                           
-                                                                           stock.Value.StockSymbol);
+                    //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET Price = {0},
+                    //                                                       PrevClosePrice = {1},
+                    //                                                       HighPrice = {2},
+                    //                                                       LowPrice = {3},
+                    //                                                       OpenPrice = {4},
+                    //                                                       Volume = {5},
+                    //                                                       Change = {6},
+                    //                                                       MarketCap = {7},
+                    //                                                       [52-week_High] = {8},
+                    //                                                       [52-week_Low] = {9},
+                    //                                                       AskPrice = {10},
+                    //                                                       BidPrice = {11},
+                    //                                                       AskSize = {12},
+                    //                                                       BidSize = {13}                                                                         
+                    //                                    WHERE Ticker = '{14}'", stock.Value.MatchPrice,
+                    //                                                       stock.Value.PriorPrice,
+                    //                                                       stock.Value.HighPrice,
+                    //                                                       stock.Value.LowPrice,
+                    //                                                       0,
+                    //                                                       0,
+                    //                                                       stock.Value.MatchPrice - stock.Value.PriorPrice,
+                    //                                                       0,
+                    //                                                       0,
+                    //                                                       0,
+                    //                                                       stock.Value.OfferP1,
+                    //                                                       stock.Value.BidP1,
+                    //                                                       stock.Value.OfferV1,
+                    //                                                       stock.Value.BidV1,                                                                           
+                    //                                                       stock.Value.StockSymbol);
+
+
+                    cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET EquityName = '{0}'
+                                                      WHERE Ticker = '{1}'", EquityNameDict[stock.Value.StockSymbol], stock.Value.StockSymbol);
 
 
                     Console.WriteLine("Inserting: " + stock.Value.StockSymbol);
-                    Console.WriteLine("SQL: " + cmd.CommandText);                    
-                    
+                    Console.WriteLine("SQL: " + cmd.CommandText);
+
                     //da.UpdateCommand.ExecuteNonQuery();
                     //Console.WriteLine("OK: " + stock.Value.StockSymbol);
-                    
+
 
                     //Console.WriteLine("Inserting history price of " + stock.Value.StockSymbol);
 
@@ -465,11 +478,14 @@ namespace ConsoleApplication1
 
         public static Dictionary<String, String> GetName()
         {
-            WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetDataHoseStockList");
+            //WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetDataHoseStockList");
+            WebRequest request = WebRequest.Create("http://banggia.vietstock.vn/StockHandler.ashx?option=init&getVersion=-1&IndexCode=VNINDEX&catid=1");
             request.Method = "POST";
+                        
             // Create POST data and convert it to a byte array.
             //string postData = "This is a test that posts this string to a Web server.";
             //byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+            
             // Set the ContentType property of the WebRequest.
             request.ContentType = "application/json; charset=UTF-8";
             // Set the ContentLength property of the WebRequest.
@@ -499,13 +515,74 @@ namespace ConsoleApplication1
             dataStream.Close();
             response.Close();
 
+            //var linetokens = responseFromServer.Substring(6, responseFromServer.Length - 11).Split(new String[] { "|0|#" }, StringSplitOptions.None);
+            //var StockName = new Dictionary<String, String>();
+
+            //foreach (var linetok in linetokens)
+            //{
+            //    StockName[linetok.Split('|')[0]] = linetok.Split('|')[1]; 
+            //}
+
+            var linetokens = responseFromServer.Substring(1, responseFromServer.Length - 2).Split(new string[] { "},{" }, StringSplitOptions.None);
+            var StockName = new Dictionary<String, String>();
+
+            for (int i = 0; i < linetokens.Length - 1; i++)
+            {
+                linetokens[i] = linetokens[i] + "}";
+            }
+            for (int i = 1; i < linetokens.Length; i++)
+            {
+                linetokens[i] = "{" + linetokens[i];
+            }
+
+            foreach (var linetok in linetokens)
+            {
+                JObject linejson = JObject.Parse(linetok);
+                //StockName[linejson["ST"].ToObject<String>()] = Encoding.UTF8.GetBytes(linejson["SN"].ToObject<String>());
+                StockName[linejson["ST"].ToObject<String>()] = linejson["SN"].ToObject<String>();
+            }
+
+            return StockName;
+        }
+
+        public static Dictionary<String, String> GetNameFromBanggia2()
+        {
+            WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetDataHoseStockList");
+
+            // Set the request method
+            request.Method = "POST";
+
+            // Set the ContentType property of the WebRequest.
+            request.ContentType = "application/json; charset=UTF-8";
+
+            // Get the request stream.
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Close();
+
+            // Get the response.
+            WebResponse response = request.GetResponse();
+
+            // Display the status.
+            Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+            // Get the stream containing content returned by the server.
+            dataStream = response.GetResponseStream();
+            // Open the stream using a StreamReader for easy access.
+            StreamReader reader = new StreamReader(dataStream);
+            // Read the content.
+            string responseFromServer = reader.ReadToEnd();
+
+            reader.Close();
+            dataStream.Close();
+            response.Close();
+
             var linetokens = responseFromServer.Substring(6, responseFromServer.Length - 11).Split(new String[] { "|0|#" }, StringSplitOptions.None);
             var StockName = new Dictionary<String, String>();
 
             foreach (var linetok in linetokens)
             {
-                StockName[linetok.Split('|')[0]] = linetok.Split('|')[1]; 
+                StockName[linetok.Split('|')[0]] = linetok.Split('|')[1];
             }
+
             return StockName;
         }
 
