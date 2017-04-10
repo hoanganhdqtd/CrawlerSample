@@ -11,6 +11,10 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Data;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace ConsoleApplication1
 {
@@ -18,6 +22,7 @@ namespace ConsoleApplication1
     class StockDetails : IComparable<StockDetails>
     {
         public string StockSymbol { get; private set; }
+        public string EquityName { get; private set; }
         public decimal PriorPrice { get; private set; }
         public decimal FloorPrice { get; private set; }
         public decimal CeilingPrice { get; private set; }
@@ -40,10 +45,12 @@ namespace ConsoleApplication1
         public Int64 OfferV2 { get; set; }
         public decimal OfferP3 { get; set; }
         public Int64 OfferV3 { get; set; }
+        public decimal OpenPrice { get; set; }
         public decimal HighPrice { get; set; }
         public decimal LowPrice { get; set; }
+        
         public decimal AvgPrice { get; set; }
-        //public decimal OpenPrice { get; set; }
+        
         public Int64 TotalQtty { get; set; }
         public Int64 FBuyQtty { get; set; }
         public Int64 FCurrentRoom { get; set; }
@@ -55,19 +62,23 @@ namespace ConsoleApplication1
 
 
 
-        public StockDetails(string stockSym, decimal ceil, decimal floor, decimal prior, decimal session1Price, Int64 session1Qtty, decimal session2Price,
+        public StockDetails(string stockSym, string equityName, decimal ceil, decimal floor, decimal prior, decimal session1Price, Int64 session1Qtty, decimal session2Price,
             Int64 session2Qtty, decimal bidP1, Int64 bidV1, decimal bidP2, Int64 bidV2, decimal bidP3, Int64 bidV3, decimal matchPrice, Int64 matchQtty, 
-            decimal change, decimal offerP1, Int64 offerV1, decimal offerP2, Int64 offerV2, decimal offerP3, Int64 offerV3, decimal highPrice, 
-            decimal lowPrice, decimal avgPrice, Int64 totalQtty, Int64 fBuyQtty, Int64 fCurrentRoom, Int64 fSellQtty)
+            decimal change, decimal offerP1, Int64 offerV1, decimal offerP2, Int64 offerV2, decimal offerP3, Int64 offerV3, decimal openPrice, 
+            decimal highPrice, decimal lowPrice, decimal avgPrice, 
+            Int64 totalQtty, Int64 fBuyQtty, Int64 fCurrentRoom, Int64 fSellQtty)
         {
             StockSymbol = stockSym;
+            EquityName = equityName;
             CeilingPrice = ceil;
             FloorPrice = floor;
             PriorPrice = prior;
+
             Session1Price = session1Price;
             Session1Qtty = session1Qtty;
             Session2Price = session2Price;
             Session2Qtty = session2Qtty;
+
             BidP1 = bidP1;
             BidV1 = bidV1;
             BidP2 = bidP2;
@@ -83,9 +94,12 @@ namespace ConsoleApplication1
             OfferV2 = offerV2;
             OfferP3 = offerP3;
             OfferV3 = offerV3;
+            OpenPrice = openPrice;
             HighPrice = highPrice;
             LowPrice = lowPrice;
+
             AvgPrice = avgPrice;
+
             TotalQtty = totalQtty;
             FBuyQtty = fBuyQtty;
             FCurrentRoom = fCurrentRoom;
@@ -101,13 +115,14 @@ namespace ConsoleApplication1
 
         public override string ToString()
         {
-            return String.Format(@"sym: {0}, ceil: {1}, floor: {2}, prior: {3}, session1Price: {4}, session1Qtty: {5}, session2Price: {6}, session2Qtty: {7}, 
-                                    bidV3: {8}, bidP3: {9}, bidV2: {10}, bidP2: {11}, bidV1: {12}, bidP1: {13}, matchPrice: {14}, matchQtty: {15}, percent: {16}, 
-                                    offerP1: {17}, offerV1: {18}, offerP2: {19}, offerV2: {20}, offerP3: {21}, offerV3: {22}, highPrice: {23}, lowPrice: {24}, 
-                                    avrPrice: {25}, totalQtty: {26}, fBuyQtty: {27}, fCurrentRoom: {28}, fSellQtty: {29}",
-                                    StockSymbol, CeilingPrice, FloorPrice, PriorPrice, Session1Price, Session1Qtty, Session2Price, Session2Qtty,
+            return String.Format(@"sym: {0}, equity: {1}, ceil: {2}, floor: {3}, prior: {4}, session1Price: {5}, session1Qtty: {6}, session2Price: {7}, session2Qtty: {8}, 
+                                    bidV3: {9}, bidP3: {10}, bidV2: {11}, bidP2: {12}, bidV1: {13}, bidP1: {14}, matchPrice: {15}, matchQtty: {16}, percent: {17}, 
+                                    offerP1: {18}, offerV1: {19}, offerP2: {20}, offerV2: {21}, offerP3: {22}, offerV3: {23}, openPrice: {24}, 
+                                    highPrice: {25}, lowPrice: {26}, avgPrice: {27}, totalQtty: {28}, fBuyQtty: {29}, fCurrentRoom: {30}, fSellQtty: {31}",
+                                    StockSymbol, EquityName, CeilingPrice, FloorPrice, PriorPrice, Session1Price, Session1Qtty, Session2Price, Session2Qtty,
                                     BidV3, BidP3, BidV2, BidP2, BidV1, BidP3, MatchPrice, MatchQtty, Change, OfferP1, OfferV1, OfferP2, OfferV2,
-                                    OfferP3, OfferV3, HighPrice, LowPrice, AvgPrice, TotalQtty, FBuyQtty, FCurrentRoom, FSellQtty);
+                                    OfferP3, OfferV3, OpenPrice, HighPrice, LowPrice, AvgPrice, 
+                                    TotalQtty, FBuyQtty, FCurrentRoom, FSellQtty);
         }
 
         public int CompareTo(StockDetails other)
@@ -125,9 +140,18 @@ namespace ConsoleApplication1
         }
     }
 
+    //public class StockData
+    //{
+    //    public string ST { get; set; }
+    //    public decimal PR { get; set; }
+    //    public decimal CE { get; set; }
+    //    public decimal FL { get; set; }
+    //    public string SN { get; set; }
+    //}
+
     class Program
     {
-
+        // for null value
         public static decimal getFromStringToken(String stringtok)
         {
             var result = (stringtok != null && stringtok != "") ? decimal.Parse(stringtok) : 0;
@@ -154,8 +178,9 @@ namespace ConsoleApplication1
         {
             Thread t = new Thread(new ParameterizedThreadStart(ThreadLoop));
 
-            t.Start((Action)GetData);
-            GetDataFromFpts();
+            t.Start((Action)GetDataFromFpts);
+
+            //GetDataFromFpts();
         }
 
         public static void ThreadLoop(object callback)
@@ -163,14 +188,13 @@ namespace ConsoleApplication1
             while (true)
             {
                 ((Delegate)callback).DynamicInvoke(null);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
             }
         }
 
         public static void GetDataFromFpts()
         {
-            //getdata();
-
+            
             // Create a request using a URL that can receive a post. 
             WebRequest request = WebRequest.Create("http://priceboard.fpts.com.vn/hsx/data.ashx?s=quote&l=All");
             // WebRequest request = WebRequest.Create("http://stockboard.sbsc.com.vn/HO.ashx?FileName=ref");
@@ -209,7 +233,7 @@ namespace ConsoleApplication1
             // Read the content.
             string responseFromServer = reader.ReadToEnd();
             // Display the content.
-            Console.WriteLine(responseFromServer);
+            //Console.WriteLine(responseFromServer);
             //Console.ReadLine();
             // Clean up the streams.
 
@@ -265,8 +289,8 @@ namespace ConsoleApplication1
                 //Console.ReadLine();
 
                 //var Ticker = linejson["Info"][0][1].ToObject<string>();
-                var StockName = linejson["Info"][0][1].ToObject<string>();
-                //var StockName = stockNameDict[Ticker];
+                var StockSymbol = linejson["Info"][0][1].ToObject<string>();
+                var EquityName = EquityNameDict[StockSymbol];
                 var PrevClosePrice = linejson["Info"][1][1].ToObject<decimal>();
                 var Ceiling = linejson["Info"][2][1].ToObject<decimal>();
                 var Floor = linejson["Info"][3][1].ToObject<decimal>();
@@ -289,15 +313,15 @@ namespace ConsoleApplication1
                 var OpenPrice = linejson["Info"][22][1].ToObject<decimal>();
                 var HighestPrice = linejson["Info"][23][1].ToObject<decimal>();
                 var LowestPrice = linejson["Info"][24][1].ToObject<decimal>();
-                var Avg = linejson["Info"][25][1].ToObject<decimal>();
+                
                 var FrgnBuy = linejson["Info"][26][1].ToObject<Int64>();
                 var FrgnSell = linejson["Info"][27][1].ToObject<Int64>();
                 var RoomLeft = linejson["Info"][28][1].ToObject<Int64>();
                 try
                 {
-                    StockDict.Add(StockName, new StockDetails(StockName, Ceiling, Floor, PrevClosePrice, 0, 0,
+                    StockDict.Add(StockSymbol, new StockDetails(StockSymbol, EquityName, Ceiling, Floor, PrevClosePrice, 0, 0,
                         0, 0, BidPrice1, BidVol1, BidPrice2, BidVol2, BidPrice3, BidVol3, MatchPrice, MatchVol, Change, AskPrice1, AskVol1, AskPrice2, AskVol2,
-                        AskPrice3, AskVol3, HighestPrice, LowestPrice, Avg, TotalVolume, FrgnBuy, RoomLeft, FrgnSell));
+                        AskPrice3, AskVol3, OpenPrice, HighestPrice, LowestPrice, 0, TotalVolume, FrgnBuy, RoomLeft, FrgnSell));
                 }
                 catch (FormatException e)
                 {
@@ -328,10 +352,10 @@ namespace ConsoleApplication1
                     //                VALUES ('{0}', {1}, {2})", stock.Value.StockSymbol, DateTime.Now, stock.Value.MatchPrice);
 
 
-                    //cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
-                    //cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
-                    //cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
-                    //cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
+                    cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
+                    cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
+                    cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
 
 
                     //cmd.CommandText = String.Format(@"
@@ -354,7 +378,7 @@ namespace ConsoleApplication1
                     //     BidSize                         
                     //    )
                     //    VALUES ('{0}', '{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15})",
-                    //    stock.Value.StockSymbol, stock.Value.StockSymbol, stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
+                    //    stock.Value.StockSymbol, GetName()[stock.Value.StockSymbol], stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
                     //    stock.Value.LowPrice, 0, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1,
                     //    stock.Value.OfferV1, stock.Value.BidV1);
 
@@ -444,9 +468,10 @@ namespace ConsoleApplication1
                     //                                                       stock.Value.BidV1,                                                                           
                     //                                                       stock.Value.StockSymbol);
 
+                    //Console.OutputEncoding = Encoding.UTF8;
+                    //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET EquityName = N'{0}'
+                    //                                  WHERE Ticker = '{1}'", EquityNameDict[stock.Value.StockSymbol], stock.Value.StockSymbol);
 
-                    cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET EquityName = '{0}'
-                                                      WHERE Ticker = '{1}'", EquityNameDict[stock.Value.StockSymbol], stock.Value.StockSymbol);
 
 
                     Console.WriteLine("Inserting: " + stock.Value.StockSymbol);
@@ -478,14 +503,35 @@ namespace ConsoleApplication1
 
         public static Dictionary<String, String> GetName()
         {
+            //HttpClient client = new HttpClient();
+            //client.MaxResponseContentBufferSize = 256000;
+
+            //var uri = new Uri("http://banggia.vietstock.vn/StockHandler.ashx?option=init&getVersion=-1&IndexCode=VNINDEX&catid=1");
+            //List<StockData> myList = new List<StockData>();
+            //try
+            //{
+
+            //    var content = new StringContent("", Encoding.UTF8, "application/json");
+            //    var responses = await client.PostAsync(uri, content);
+            //    if (responses.IsSuccessStatusCode)
+            //    {
+            //        var responseContent = await responses.Content.ReadAsStringAsync();
+            //        myList = JsonConvert.DeserializeObject<List<StockData>>(responseContent);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine(@"                      ERROR {0}", ex.Message);
+            //}
+
             //WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetDataHoseStockList");
             WebRequest request = WebRequest.Create("http://banggia.vietstock.vn/StockHandler.ashx?option=init&getVersion=-1&IndexCode=VNINDEX&catid=1");
             request.Method = "POST";
-                        
+
             // Create POST data and convert it to a byte array.
             //string postData = "This is a test that posts this string to a Web server.";
             //byte[] byteArray = Encoding.UTF8.GetBytes(postData);
-            
+
             // Set the ContentType property of the WebRequest.
             request.ContentType = "application/json; charset=UTF-8";
             // Set the ContentLength property of the WebRequest.
@@ -503,11 +549,12 @@ namespace ConsoleApplication1
             // Get the stream containing content returned by the server.
             dataStream = response.GetResponseStream();
             // Open the stream using a StreamReader for easy access.
-            StreamReader reader = new StreamReader(dataStream);
+            //StreamReader reader = new StreamReader(dataStream);
+            StreamReader reader = new StreamReader(dataStream, Encoding.UTF8, true);
             // Read the content.
             string responseFromServer = reader.ReadToEnd();
             // Display the content.
-            //Console.WriteLine(responseFromServer);
+            Console.WriteLine(responseFromServer);
             //Console.ReadLine();
             // Clean up the streams.
 
@@ -541,9 +588,19 @@ namespace ConsoleApplication1
                 //StockName[linejson["ST"].ToObject<String>()] = Encoding.UTF8.GetBytes(linejson["SN"].ToObject<String>());
                 StockName[linejson["ST"].ToObject<String>()] = linejson["SN"].ToObject<String>();
             }
-
+            //foreach (var item in myList)
+            //{
+            //    StockName.Add(item.ST, item.SN);
+            //}
+            //foreach (var item in StockName)
+            //{
+            //    Console.WriteLine(item.Key + " : " + item.Value);
+            //}
+            
+            //Console.WriteLine();
             return StockName;
         }
+
 
         public static Dictionary<String, String> GetNameFromBanggia2()
         {
@@ -589,15 +646,15 @@ namespace ConsoleApplication1
         private static IEnumerable<StockDetails> getdata()
         {
             // Create a request using a URL that can receive a post. 
-            WebRequest request = WebRequest.Create("http://priceboard.fpts.com.vn/hsx/data.ashx?s=quote&l=All");
-        
+            WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetHoseStockQuoteInit");
+
             // Set the Method property of the request to POST.
-            request.Method = "GET";
+            request.Method = "POST";
             // Create POST data and convert it to a byte array.
             //string postData = "This is a test that posts this string to a Web server.";
             //byte[] byteArray = Encoding.UTF8.GetBytes(postData);
             // Set the ContentType property of the WebRequest.
-            request.ContentType = "text/plain; charset=utf-8";
+            request.ContentType = "application/json; charset=UTF-8";
             // Set the ContentLength property of the WebRequest.
             //request.ContentLength = byteArray.Length;
             // Get the request stream.
@@ -608,6 +665,7 @@ namespace ConsoleApplication1
             dataStream.Close();
             // Get the response.
             WebResponse response = request.GetResponse();
+
             // Display the status.
             Console.WriteLine(((HttpWebResponse)response).StatusDescription);
             // Get the stream containing content returned by the server.
@@ -636,6 +694,7 @@ namespace ConsoleApplication1
             //}
 
             var StockDict = new Dictionary<String, StockDetails>();
+            var equityName = GetName();
 
             foreach (var linetok in linetokens)
             {
@@ -645,9 +704,9 @@ namespace ConsoleApplication1
 
                 try
                 {
-                    var stockceil = getFromStringToken(stocktoks[1]);
-                    var stockfloor = getFromStringToken(stocktoks[2]);
-                    var stockprior = getFromStringToken(stocktoks[3]);
+                    var ceil = getFromStringToken(stocktoks[1]);
+                    var floor = getFromStringToken(stocktoks[2]);
+                    var prior = getFromStringToken(stocktoks[3]);
 
                     var stocksession1price = getFromStringToken(stocktoks[4]);
                     var stocksession1qtty = (Int64)getFromStringToken(stocktoks[5]);
@@ -673,18 +732,20 @@ namespace ConsoleApplication1
                     var offerP3 = getFromStringToken(stocktoks[20]);
                     var offerV3 = (Int64)getFromStringToken(stocktoks[21]);
 
+                    var openPrice = 0;
                     var highPrice = getFromStringToken(stocktoks[22]);
                     var lowPrice = getFromStringToken(stocktoks[23]);
-                    var avrPrice = getFromStringToken(stocktoks[24]);
+                    var avgPrice = getFromStringToken(stocktoks[24]);
                     var totalQtty = (Int64)getFromStringToken(stocktoks[25]);
 
                     var fBuyQtty = (Int64)getFromStringToken(stocktoks[26]);
                     var fCurrentRoom = (Int64)getFromStringToken(stocktoks[27]);
                     var fSellQtty = (Int64)getFromStringToken(stocktoks[28]);
 
-                    StockDict.Add(stocksym, new StockDetails(stocksym, stockceil, stockfloor, stockprior, stocksession1price, stocksession1qtty,
-                        stocksession2price, stocksession2qtty, bidP1, bidV1, bidP2, bidV2, bidP3, bidV3, matchPrice, matchQtty, matchPrice - stockprior,
-                        offerP1, offerV1, offerV2, offerV2, offerV3, offerV3, highPrice, lowPrice, avrPrice, totalQtty, fBuyQtty, fCurrentRoom, fSellQtty));
+                    StockDict.Add(stocksym, new StockDetails(stocksym, equityName[stocksym], ceil, floor, prior, stocksession1price, stocksession1qtty,
+                        stocksession2price, stocksession2qtty, bidP1, bidV1, bidP2, bidV2, bidP3, bidV3, matchPrice, matchQtty, matchPrice - prior,
+                        offerP1, offerV1, offerV2, offerV2, offerV3, offerV3, openPrice, highPrice, lowPrice, avgPrice, totalQtty, fBuyQtty, fCurrentRoom, 
+                        fSellQtty));
                 }
                 catch (FormatException e)
                 {
@@ -697,7 +758,7 @@ namespace ConsoleApplication1
                 Console.WriteLine(stockdetailpair.Value.ToString());
                 Console.WriteLine();
             }
-            //Console.WriteLine(StockDict["AAA"].CeilingPrice);
+            
             Console.ReadLine();
 
             return StockDict.Values;
