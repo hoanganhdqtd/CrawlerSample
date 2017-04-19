@@ -178,7 +178,8 @@ namespace ConsoleApplication1
         {
             Thread t = new Thread(new ParameterizedThreadStart(ThreadLoop));
 
-            t.Start((Action)GetDataFromFpts);
+            //t.Start((Action)GetDataFromFpts);
+            t.Start();
 
             //GetDataFromFpts();
         }
@@ -187,11 +188,14 @@ namespace ConsoleApplication1
         {
             while (true)
             {
-                ((Delegate)callback).DynamicInvoke(null);
+                GetDataFromFpts();
+                
+                //((Delegate)callback).DynamicInvoke(null);
                 Thread.Sleep(10000);
             }
         }
 
+         
         public static void GetDataFromFpts()
         {
             
@@ -278,15 +282,13 @@ namespace ConsoleApplication1
             persist security info=False;
             initial catalog=StockTrainer";
 
-            var EquityNameDict = GetName();
-            //Console.WriteLine(EquityNameDict["AAA"]);
-            Console.ReadLine();
+            var EquityNameDict = GetCompanyNameFromVietstock();
+            
+            //Console.ReadLine();
 
             foreach (var linetok in linetokens)
             {
-                JObject linejson = JObject.Parse(linetok);
-                //Console.WriteLine(linejson);
-                //Console.ReadLine();
+                JObject linejson = JObject.Parse(linetok);                
 
                 //var Ticker = linejson["Info"][0][1].ToObject<string>();
                 var StockSymbol = linejson["Info"][0][1].ToObject<string>();
@@ -335,173 +337,183 @@ namespace ConsoleApplication1
                 Console.WriteLine(stockdetailpair.Value.ToString());
                 Console.WriteLine();
             }
-            Console.ReadLine();
-                      
-
-            try
-            {
-                conn.Open();
-                SqlCommand cmd = new SqlCommand();
-                cmd.Connection = conn;
-                //SqlDataAdapter da = new SqlDataAdapter();                
-                //da.UpdateCommand.Connection = conn;
-
-                foreach (var stock in StockDict)
-                {
-                    //cmd.CommandText = String.Format(@"INSERT INTO dbo.History (Ticker, Time, HistoryPrice)
-                    //                VALUES ('{0}', {1}, {2})", stock.Value.StockSymbol, DateTime.Now, stock.Value.MatchPrice);
+            //Console.ReadLine();
 
 
-                    cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
-                    cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
-                    cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
+            //try
+            //{
+            //    conn.Open();
+            //    SqlCommand cmd = new SqlCommand();
+            //    cmd.Connection = conn;
+            //    //SqlDataAdapter da = new SqlDataAdapter();                
+            //    //da.UpdateCommand.Connection = conn;
+
+            //    foreach (var stock in StockDict)
+            //    {
+            //        //cmd.CommandText = String.Format(@"INSERT INTO dbo.History (Ticker, Time, HistoryPrice)
+            //        //                VALUES ('{0}', {1}, {2})", stock.Value.StockSymbol, DateTime.Now, stock.Value.MatchPrice);
 
 
-                    //cmd.CommandText = String.Format(@"
-                    //    INSERT INTO dbo.Stock
-                    //    (Ticker,
-                    //     EquityName, 
-                    //     Price,
-                    //     PrevClosePrice,
-                    //     HighPrice,
-                    //     LowPrice,
-                    //     OpenPrice,   
-                    //     Volume,
-                    //     Change,
-                    //     MarketCap,
-                    //     [52-week_High],
-                    //     [52-week_Low],   
-                    //     AskPrice,
-                    //     BidPrice,
-                    //     AskSize,
-                    //     BidSize                         
-                    //    )
-                    //    VALUES ('{0}', '{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15})",
-                    //    stock.Value.StockSymbol, GetName()[stock.Value.StockSymbol], stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
-                    //    stock.Value.LowPrice, 0, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1,
-                    //    stock.Value.OfferV1, stock.Value.BidV1);
+            //        cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
+            //        cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
+            //        cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
+            //        cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
 
 
-
-                    //da.UpdateCommand = new SqlCommand(@"
-                    //    UPDATE dbo.Stock 
-                    //    SET MatchPrice = @MatchPrice, PrevClosePrice = @PriorPrice, HighPrice = @HighPrice, LowPrice = @LowPrice, OpenPrice = @OpenPrice, Volume = @Volume, Change = @Change, MarketCap = @MarketCap, 
-                    //        [52-week_High] = @[52-week_High], [52-week_Low] = @[52-week_Low], AskPrice = @AskPrice, BidPrice = @BidPrice, 
-                    //        AskSize = @AskSize, BidSize = @BidSize
-                    //    WHERE Ticker = '@StockSymbol'");
-                    //da.UpdateCommand.Connection = conn;
-
-
-                    //da.UpdateCommand.Parameters.Add("@StockSymbol", SqlDbType.VarChar);
-                    //da.UpdateCommand.Parameters["@StockSymbol"].Value = stock.Value.StockSymbol;
-                    ////cmd.Parameters["@EquityName"].Value = stock.Value.StockSymbol;
-                    //da.UpdateCommand.Parameters.Add("@MatchPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@MatchPrice"].Value = stock.Value.MatchPrice;
-
-                    //da.UpdateCommand.Parameters.Add("@PriorPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@PriorPrice"].Value = stock.Value.PriorPrice;
-
-                    //da.UpdateCommand.Parameters.Add("@HighPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@HighPrice"].Value = stock.Value.HighPrice;
-
-                    //da.UpdateCommand.Parameters.Add("@LowPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@LowPrice"].Value = stock.Value.LowPrice;
-
-                    //da.UpdateCommand.Parameters.Add("@OpenPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@OpenPrice"].Value = (decimal)0;
-
-                    //da.UpdateCommand.Parameters.Add("@Volume", SqlDbType.BigInt);
-                    //da.UpdateCommand.Parameters["@Volume"].Value = (Int64)0;
-
-                    //da.UpdateCommand.Parameters.Add("@Change", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@Change"].Value = stock.Value.MatchPrice - stock.Value.PriorPrice;
-
-                    //da.UpdateCommand.Parameters.Add("@MarketCap", SqlDbType.BigInt);
-                    //da.UpdateCommand.Parameters["@MarketCap"].Value = (Int64)0;
-
-                    //da.UpdateCommand.Parameters.Add("@[52-week_High]", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@[52-week_High]"].Value = (decimal)0;
-
-                    //da.UpdateCommand.Parameters.Add("@[52-week_Low]", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@[52-week_Low]"].Value = (decimal)0;
-
-                    //da.UpdateCommand.Parameters.Add("@AskPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@AskPrice"].Value = stock.Value.OfferP1;
-
-                    //da.UpdateCommand.Parameters.Add("@BidPrice", SqlDbType.Decimal);
-                    //da.UpdateCommand.Parameters["@BidPrice"].Value = stock.Value.BidP1;
-
-                    //da.UpdateCommand.Parameters.Add("@AskSize", SqlDbType.BigInt);
-                    //da.UpdateCommand.Parameters["@AskSize"].Value = stock.Value.OfferV1;
-
-                    //da.UpdateCommand.Parameters.Add("@BidSize", SqlDbType.BigInt);
-                    //da.UpdateCommand.Parameters["@BidSize"].Value = stock.Value.BidV1;
-
-                    //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET Price = {0},
-                    //                                                       PrevClosePrice = {1},
-                    //                                                       HighPrice = {2},
-                    //                                                       LowPrice = {3},
-                    //                                                       OpenPrice = {4},
-                    //                                                       Volume = {5},
-                    //                                                       Change = {6},
-                    //                                                       MarketCap = {7},
-                    //                                                       [52-week_High] = {8},
-                    //                                                       [52-week_Low] = {9},
-                    //                                                       AskPrice = {10},
-                    //                                                       BidPrice = {11},
-                    //                                                       AskSize = {12},
-                    //                                                       BidSize = {13}                                                                         
-                    //                                    WHERE Ticker = '{14}'", stock.Value.MatchPrice,
-                    //                                                       stock.Value.PriorPrice,
-                    //                                                       stock.Value.HighPrice,
-                    //                                                       stock.Value.LowPrice,
-                    //                                                       0,
-                    //                                                       0,
-                    //                                                       stock.Value.MatchPrice - stock.Value.PriorPrice,
-                    //                                                       0,
-                    //                                                       0,
-                    //                                                       0,
-                    //                                                       stock.Value.OfferP1,
-                    //                                                       stock.Value.BidP1,
-                    //                                                       stock.Value.OfferV1,
-                    //                                                       stock.Value.BidV1,                                                                           
-                    //                                                       stock.Value.StockSymbol);
-
-                    //Console.OutputEncoding = Encoding.UTF8;
-                    //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET EquityName = N'{0}'
-                    //                                  WHERE Ticker = '{1}'", EquityNameDict[stock.Value.StockSymbol], stock.Value.StockSymbol);
+            //        //cmd.CommandText = String.Format(@"
+            //        //    INSERT INTO dbo.Stock
+            //        //    (Ticker,
+            //        //     EquityName, 
+            //        //     Price,
+            //        //     PrevClosePrice,
+            //        //     HighPrice,
+            //        //     LowPrice,
+            //        //     OpenPrice,   
+            //        //     Volume,
+            //        //     Change,
+            //        //     MarketCap,
+            //        //     [52-week_High],
+            //        //     [52-week_Low],   
+            //        //     AskPrice,
+            //        //     BidPrice,
+            //        //     AskSize,
+            //        //     BidSize                         
+            //        //    )
+            //        //    VALUES ('{0}', N'{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15})",
+            //        //    stock.Value.StockSymbol, GetName()[stock.Value.StockSymbol], stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
+            //        //    stock.Value.LowPrice, 0, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1,
+            //        //    stock.Value.OfferV1, stock.Value.BidV1);
 
 
 
-                    Console.WriteLine("Inserting: " + stock.Value.StockSymbol);
-                    Console.WriteLine("SQL: " + cmd.CommandText);
-
-                    //da.UpdateCommand.ExecuteNonQuery();
-                    //Console.WriteLine("OK: " + stock.Value.StockSymbol);
-
-
-                    //Console.WriteLine("Inserting history price of " + stock.Value.StockSymbol);
-
-                    //cmd.Connection = conn;
-                    cmd.ExecuteNonQuery();
-                    Console.WriteLine("OK: " + stock.Value.StockSymbol);
-
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            finally
-            {
-                conn.Close();
-            }
+            //        //da.UpdateCommand = new SqlCommand(@"
+            //        //    UPDATE dbo.Stock 
+            //        //    SET MatchPrice = @MatchPrice, PrevClosePrice = @PriorPrice, HighPrice = @HighPrice, LowPrice = @LowPrice, OpenPrice = @OpenPrice, Volume = @Volume, Change = @Change, MarketCap = @MarketCap, 
+            //        //        [52-week_High] = @[52-week_High], [52-week_Low] = @[52-week_Low], AskPrice = @AskPrice, BidPrice = @BidPrice, 
+            //        //        AskSize = @AskSize, BidSize = @BidSize
+            //        //    WHERE Ticker = '@StockSymbol'");
+            //        //da.UpdateCommand.Connection = conn;
 
 
+            //        //da.UpdateCommand.Parameters.Add("@StockSymbol", SqlDbType.VarChar);
+            //        //da.UpdateCommand.Parameters["@StockSymbol"].Value = stock.Value.StockSymbol;
+            //        ////cmd.Parameters["@EquityName"].Value = stock.Value.StockSymbol;
+            //        //da.UpdateCommand.Parameters.Add("@MatchPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@MatchPrice"].Value = stock.Value.MatchPrice;
+
+            //        //da.UpdateCommand.Parameters.Add("@PriorPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@PriorPrice"].Value = stock.Value.PriorPrice;
+
+            //        //da.UpdateCommand.Parameters.Add("@HighPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@HighPrice"].Value = stock.Value.HighPrice;
+
+            //        //da.UpdateCommand.Parameters.Add("@LowPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@LowPrice"].Value = stock.Value.LowPrice;
+
+            //        //da.UpdateCommand.Parameters.Add("@OpenPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@OpenPrice"].Value = (decimal)0;
+
+            //        //da.UpdateCommand.Parameters.Add("@Volume", SqlDbType.BigInt);
+            //        //da.UpdateCommand.Parameters["@Volume"].Value = (Int64)0;
+
+            //        //da.UpdateCommand.Parameters.Add("@Change", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@Change"].Value = stock.Value.MatchPrice - stock.Value.PriorPrice;
+
+            //        //da.UpdateCommand.Parameters.Add("@MarketCap", SqlDbType.BigInt);
+            //        //da.UpdateCommand.Parameters["@MarketCap"].Value = (Int64)0;
+
+            //        //da.UpdateCommand.Parameters.Add("@[52-week_High]", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@[52-week_High]"].Value = (decimal)0;
+
+            //        //da.UpdateCommand.Parameters.Add("@[52-week_Low]", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@[52-week_Low]"].Value = (decimal)0;
+
+            //        //da.UpdateCommand.Parameters.Add("@AskPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@AskPrice"].Value = stock.Value.OfferP1;
+
+            //        //da.UpdateCommand.Parameters.Add("@BidPrice", SqlDbType.Decimal);
+            //        //da.UpdateCommand.Parameters["@BidPrice"].Value = stock.Value.BidP1;
+
+            //        //da.UpdateCommand.Parameters.Add("@AskSize", SqlDbType.BigInt);
+            //        //da.UpdateCommand.Parameters["@AskSize"].Value = stock.Value.OfferV1;
+
+            //        //da.UpdateCommand.Parameters.Add("@BidSize", SqlDbType.BigInt);
+            //        //da.UpdateCommand.Parameters["@BidSize"].Value = stock.Value.BidV1;
+
+            //        //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET Price = {0},
+            //        //                                                       PrevClosePrice = {1},
+            //        //                                                       HighPrice = {2},
+            //        //                                                       LowPrice = {3},
+            //        //                                                       OpenPrice = {4},
+            //        //                                                       Volume = {5},
+            //        //                                                       Change = {6},
+            //        //                                                       MarketCap = {7},
+            //        //                                                       [52-week_High] = {8},
+            //        //                                                       [52-week_Low] = {9},
+            //        //                                                       AskPrice = {10},
+            //        //                                                       BidPrice = {11},
+            //        //                                                       AskSize = {12},
+            //        //                                                       BidSize = {13}                                                                         
+            //        //                                    WHERE Ticker = '{14}'", stock.Value.MatchPrice,
+            //        //                                                       stock.Value.PriorPrice,
+            //        //                                                       stock.Value.HighPrice,
+            //        //                                                       stock.Value.LowPrice,
+            //        //                                                       0,
+            //        //                                                       0,
+            //        //                                                       stock.Value.MatchPrice - stock.Value.PriorPrice,
+            //        //                                                       0,
+            //        //                                                       0,
+            //        //                                                       0,
+            //        //                                                       stock.Value.OfferP1,
+            //        //                                                       stock.Value.BidP1,
+            //        //                                                       stock.Value.OfferV1,
+            //        //                                                       stock.Value.BidV1,                                                                           
+            //        //                                                       stock.Value.StockSymbol);
+
+            //        //Console.OutputEncoding = Encoding.UTF8;
+            //        //cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET EquityName = N'{0}'
+            //        //                                  WHERE Ticker = '{1}'", EquityNameDict[stock.Value.StockSymbol], stock.Value.StockSymbol);
+
+
+
+            //        Console.WriteLine("Inserting: " + stock.Value.StockSymbol);
+            //        Console.WriteLine("SQL: " + cmd.CommandText);
+
+            //        //da.UpdateCommand.ExecuteNonQuery();
+            //        //Console.WriteLine("OK: " + stock.Value.StockSymbol);
+
+
+            //        //Console.WriteLine("Inserting history price of " + stock.Value.StockSymbol);
+
+            //        //cmd.Connection = conn;
+            //        cmd.ExecuteNonQuery();
+            //        Console.WriteLine("OK: " + stock.Value.StockSymbol);
+
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e.ToString());
+            //}
+            //finally
+            //{
+            //    conn.Close();
+            //}
+
+            //try
+            //{
+            //    conn.Open();
+
+            //}
+
+            InsertStockTable(StockDict);
+            InsertPriceHistory(StockDict);
+            UpdateStockPrice(StockDict);
         }
+ 
 
-        public static Dictionary<String, String> GetName()
+
+        public static Dictionary<String, String> GetCompanyNameFromVietstock()
         {
             //HttpClient client = new HttpClient();
             //client.MaxResponseContentBufferSize = 256000;
@@ -601,8 +613,8 @@ namespace ConsoleApplication1
             return StockName;
         }
 
-
-        public static Dictionary<String, String> GetNameFromBanggia2()
+        // get company name from bangia2
+        public static Dictionary<String, String> GetCompanyNameFromBanggia2()
         {
             WebRequest request = WebRequest.Create("http://banggia2.ssi.com.vn/AjaxWebService.asmx/GetDataHoseStockList");
 
@@ -641,6 +653,201 @@ namespace ConsoleApplication1
             }
 
             return StockName;
+        }
+
+        // insert new stock
+        private static void InsertStockTable (Dictionary<String, StockDetails> StockDict)
+        {
+            SqlConnection conn = new SqlConnection();
+            conn.ConnectionString = @"workstation id=StockTrainer.mssql.somee.com;
+                packet size=4096;
+                user id=lmtri1995_SQLLogin_1;
+                pwd =cu1mfemumv;
+                data source=StockTrainer.mssql.somee.com;
+                persist security info=False;
+                initial catalog=StockTrainer";
+            try
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand();
+                cmd.Connection = conn;
+                //SqlDataAdapter da = new SqlDataAdapter();                
+                //da.UpdateCommand.Connection = conn;
+
+                // get company name
+                var EquityName = GetCompanyNameFromVietstock();
+
+                // insert stock
+                foreach (var stock in StockDict)
+                {
+                    // check if stock exists in the database
+                    // if no, insert new stock
+                    cmd.CommandText = String.Format(@"SELECT COUNT(*) FROM dbo.Stock WHERE Ticker LIKE '{0}'", stock.Value.StockSymbol);
+                    int tickerCount = (int)cmd.ExecuteScalar();
+
+                    if (tickerCount < 1)
+                    {
+                        cmd.CommandText = String.Format(@"
+                        INSERT INTO dbo.Stock
+                        (Ticker,
+                         EquityName, 
+                         Price,
+                         PrevClosePrice,
+                         HighPrice,
+                         LowPrice,
+                         OpenPrice,   
+                         Volume,
+                         Change,
+                         MarketCap,
+                         [52-week_High],
+                         [52-week_Low],   
+                         AskPrice,
+                         BidPrice,
+                         AskSize,
+                         BidSize                         
+                        )
+                        VALUES ('{0}', N'{1}', {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15})",
+                        stock.Value.StockSymbol, EquityName[stock.Value.StockSymbol], stock.Value.MatchPrice, stock.Value.PriorPrice, stock.Value.HighPrice,
+                        stock.Value.LowPrice, stock.Value.OpenPrice, 0, stock.Value.MatchPrice - stock.Value.PriorPrice, 0, 0, 0, stock.Value.OfferP1, stock.Value.BidP1,
+                        stock.Value.OfferV1, stock.Value.BidV1);
+
+
+                        Console.WriteLine("Inserting: " + stock.Value.StockSymbol);
+                        Console.WriteLine("SQL: " + cmd.CommandText);
+
+                        cmd.ExecuteNonQuery();
+                        Console.WriteLine("OK: " + stock.Value.StockSymbol);
+
+                    }                   
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+        } 
+
+        public static void InsertPriceHistory(Dictionary<String, StockDetails> StockDict)
+        {
+            SqlConnection conn = new SqlConnection();
+            conn.ConnectionString = @"workstation id=StockTrainer.mssql.somee.com;
+                packet size=4096;
+                user id=lmtri1995_SQLLogin_1;
+                pwd =cu1mfemumv;
+                data source=StockTrainer.mssql.somee.com;
+                persist security info=False;
+                initial catalog=StockTrainer";
+            try
+            {
+                conn.Open();
+                //SqlCommand cmd = new SqlCommand();
+                SqlCommand cmd;
+                //cmd.Connection = conn;
+               
+                // get company name
+                var EquityName = GetCompanyNameFromVietstock();
+
+                // insert stock
+                foreach (var stock in StockDict)
+                {
+                    cmd = new SqlCommand("INSERT INTO dbo.History(Ticker, Time, HistoryPrice) VALUES (@parameter1, @parameter2, @parameter3)", conn);
+                    cmd.Parameters.AddWithValue("@parameter1", stock.Value.StockSymbol);
+                    cmd.Parameters.AddWithValue("@parameter2", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@parameter3", stock.Value.MatchPrice);
+
+
+                    Console.WriteLine("Inserting price: " + stock.Value.StockSymbol);
+                    Console.WriteLine("SQL: " + cmd.CommandText);
+
+                    cmd.ExecuteNonQuery();
+                    Console.WriteLine("OK: " + stock.Value.StockSymbol);
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        
+        public static void UpdateStockPrice(Dictionary<String, StockDetails> StockDict)
+        {
+            SqlConnection conn = new SqlConnection();
+            conn.ConnectionString = @"workstation id=StockTrainer.mssql.somee.com;
+                packet size=4096;
+                user id=lmtri1995_SQLLogin_1;
+                pwd =cu1mfemumv;
+                data source=StockTrainer.mssql.somee.com;
+                persist security info=False;
+                initial catalog=StockTrainer";
+            try
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand();
+                cmd.Connection = conn;
+
+                // get company name
+                var EquityName = GetCompanyNameFromVietstock();
+
+                // insert stock
+                foreach (var stock in StockDict)
+                {
+                    cmd.CommandText = String.Format(@"UPDATE dbo.Stock SET Price = {0},
+                                                                           PrevClosePrice = {1},
+                                                                           HighPrice = {2},
+                                                                           LowPrice = {3},
+                                                                           OpenPrice = {4},
+                                                                           Volume = {5},
+                                                                           Change = {6},
+                                                                           MarketCap = {7},
+                                                                           [52-week_High] = {8},
+                                                                           [52-week_Low] = {9},
+                                                                           AskPrice = {10},
+                                                                           BidPrice = {11},
+                                                                           AskSize = {12},
+                                                                           BidSize = {13}                                                                         
+                                                        WHERE Ticker = '{14}'", stock.Value.MatchPrice,
+                                                                           stock.Value.PriorPrice,
+                                                                           stock.Value.HighPrice,
+                                                                           stock.Value.LowPrice,
+                                                                           stock.Value.OpenPrice,
+                                                                           0,
+                                                                           stock.Value.MatchPrice - stock.Value.PriorPrice,
+                                                                           0,
+                                                                           0,
+                                                                           0,
+                                                                           stock.Value.OfferP1,
+                                                                           stock.Value.BidP1,
+                                                                           stock.Value.OfferV1,
+                                                                           stock.Value.BidV1,
+                                                                           stock.Value.StockSymbol);
+
+
+                    Console.WriteLine("Updating: " + stock.Value.StockSymbol);
+                    Console.WriteLine("SQL: " + cmd.CommandText);
+
+                    cmd.ExecuteNonQuery();
+                    Console.WriteLine("OK: " + stock.Value.StockSymbol);
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
         }
 
         private static IEnumerable<StockDetails> getdata()
@@ -694,7 +901,7 @@ namespace ConsoleApplication1
             //}
 
             var StockDict = new Dictionary<String, StockDetails>();
-            var equityName = GetName();
+            var EquityNames = GetCompanyNameFromVietstock();
 
             foreach (var linetok in linetokens)
             {
@@ -742,7 +949,7 @@ namespace ConsoleApplication1
                     var fCurrentRoom = (Int64)getFromStringToken(stocktoks[27]);
                     var fSellQtty = (Int64)getFromStringToken(stocktoks[28]);
 
-                    StockDict.Add(stocksym, new StockDetails(stocksym, equityName[stocksym], ceil, floor, prior, stocksession1price, stocksession1qtty,
+                    StockDict.Add(stocksym, new StockDetails(stocksym, EquityNames[stocksym], ceil, floor, prior, stocksession1price, stocksession1qtty,
                         stocksession2price, stocksession2qtty, bidP1, bidV1, bidP2, bidV2, bidP3, bidV3, matchPrice, matchQtty, matchPrice - prior,
                         offerP1, offerV1, offerV2, offerV2, offerV3, offerV3, openPrice, highPrice, lowPrice, avgPrice, totalQtty, fBuyQtty, fCurrentRoom, 
                         fSellQtty));
